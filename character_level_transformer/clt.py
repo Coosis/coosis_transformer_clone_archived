@@ -7,10 +7,13 @@ class LayerNorm(nn.Module):
     def __init__(self, ndim, bias):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(ndim))
-        self.bias = nn.Parameter(torch.zeros(ndim)) i bias else None
+        self.bias = nn.Parameter(torch.zeros(ndim)) if bias else None
+
+    def forward(self, input):
+        return F.layer_norm(input, input.shape[1:], weight=self.weight, bias=self.bias)
 
 # data loading
-def get_batch(split):
+def get_batch(split, train_data, val_data, block_size, batch_size, device):
     # generate a small batch of data of inputs x and targets y
     data = train_data if split == 'train' else val_data
     ix = torch.randint(len(data) - block_size, (batch_size,))
@@ -20,13 +23,13 @@ def get_batch(split):
     return x, y
 
 @torch.no_grad()
-def estimate_loss():
+def estimate_loss(model, eval_iters, train_data, val_data, block_size, batch_size, device):
     out = {}
     model.eval()
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
-            X, Y = get_batch(split)
+            X, Y = get_batch(split, train_data, val_data, block_size, batch_size, device)
             logits, loss = model(X, Y)
             losses[k] = loss.item()
         out[split] = losses.mean()
@@ -42,6 +45,7 @@ class Head(nn.Module):
         self.v = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
+        self.head_size = head_size
 
     def forward(self, x):
         # (batch_size, block_size, n_embd)
@@ -49,7 +53,8 @@ class Head(nn.Module):
         q = self.q(x)
         k = self.k(x)
         v = self.v(x)
-        wei = q @ k.transpose(-2, -1) * (head_size ** -0.5)
+        # (batch_size, block_size, head_size)
+        wei = q @ k.transpose(-2, -1) * (self.head_size ** -0.5)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
         wei = F.softmax(wei, dim=-1)
         wei = self.dropout(wei)
@@ -101,13 +106,14 @@ class Block(nn.Module):
 
 # Transformer
 class GPTLanguageModel(nn.Module):
-    def __init__(self, vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout):
+    def __init__(self, vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device):
         super().__init__()
         self.embd_table = nn.Embedding(vocab_size, n_embd)
         self.posit_table = nn.Embedding(block_size, n_embd)
-        self.blocks = nn.Sequential(*[Block(n_embd, n_blocks, n_head, head_size, dropout) for _ in range(n_blocks)])
+        self.blocks = nn.Sequential(*[Block(n_embd, block_size, n_head, head_size, dropout) for _ in range(n_blocks)])
         self.lnf = nn.LayerNorm(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
+        self.device = device
 
         self.apply(self._init_weights)
 
@@ -123,7 +129,7 @@ class GPTLanguageModel(nn.Module):
         # (batch_size, block_size)
         B, T = idx.shape
         # (batch_size, block_size, n_embd)
-        x = self.embd_table(idx) + self.posit_table(torch.arange(T, device=device))
+        x = self.embd_table(idx) + self.posit_table(torch.arange(T, device=self.device))
         # (batch_size, block_size, n_embd)
         x = self.blocks(x)
         # (batch_size, block_size, n_embd)
@@ -141,7 +147,7 @@ class GPTLanguageModel(nn.Module):
 
         return logits, loss
 
-    def generate(self, idx, max_new_tokens):
+    def generate(self, idx, max_new_tokens, block_size):
         for i in range(max_new_tokens):
             idx_con = idx[:, -block_size:]
             logits, loss = self(idx_con)
