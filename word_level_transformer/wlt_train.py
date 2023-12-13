@@ -22,16 +22,24 @@ eval_iters = 200
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-if os.path.exists("word_level_transformer/woo.txt"):
-    with open('word_level_transformer/woo.txt', 'r', encoding='utf-8') as f:
+woo_path = "word_level_transformer/woo.txt"
+if os.path.exists(woo_path):
+    with open(woo_path, 'r', encoding='utf-8') as f:
         text = f.read()
 else:
     print("File not found. ")
     exit()
 
-if not os.path.exists("word_level_transformer/hyperparameters.txt"):
+ulsf_001_path = "word_level_transformer/ulsf_subset00_1.txt"
+if os.path.exists(ulsf_001_path):
+    with open(ulsf_001_path, 'r', encoding='utf-8') as f:
+        text += f.read()
+    print("Additional dataset: ulsf_subset00_1.txt loaded successfully. ")
+
+parameters_path = "word_level_transformer/hyperparameters.txt"
+if not os.path.exists(parameters_path):
     print("hyperparameters.txt not found. Using Default parameters.")
-    with open("word_level_transformer/hyperparameters.txt", "w") as f:
+    with open(parameters_path, "w") as f:
         toWrite = ""
         toWrite += f"{n_embd}\n"
         toWrite += f"{n_head}\n"
@@ -46,7 +54,7 @@ if not os.path.exists("word_level_transformer/hyperparameters.txt"):
         toWrite += f"{eval_iters}\n"
         f.write(toWrite)
 else:
-    with open("word_level_transformer/hyperparameters.txt", "r") as f:
+    with open(parameters_path, "r") as f:
         lines = f.readlines()
         n_embd = int(lines[0])
         n_head = int(lines[1])
@@ -79,10 +87,11 @@ train_data = data[:n]
 val_data = data[n:]
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
-if not os.path.exists("word_level_transformer/model.pth"):
+model_path = "word_level_transformer/model.pth"
+if not os.path.exists(model_path):
     print("model.pth not found. Using default parameters. ")
 else:
-    model.load_state_dict(torch.load('word_level_transformer/model.pth'))
+    model.load_state_dict(torch.load(model_path))
     print("model.pth loaded successfully. ")
 
 m = model.to(device)
@@ -101,6 +110,6 @@ for iter in range(max_iters):
     optimizer.step()
 
 state_dict = model.state_dict()
-torch.save(state_dict, 'word_level_transformer/model.pth')
+torch.save(state_dict, model_path)
 
 print("Training ended successfully.")

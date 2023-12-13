@@ -23,12 +23,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 max_lenth = 100
 
-if os.path.exists("word_level_transformer/woo.txt"):
-    with open('word_level_transformer/woo.txt', 'r', encoding='utf-8') as f:
+woo_path = "word_level_transformer/woo.txt"
+
+if os.path.exists(woo_path):
+    with open(woo_path, 'r', encoding='utf-8') as f:
         text = f.read()
 else:
     print("woo.txt not found. ")
     exit()
+
+ulsf_001_path = "word_level_transformer/ulsf_subset00_1.txt"
+if os.path.exists(ulsf_001_path):
+    with open(ulsf_001_path, 'r', encoding='utf-8') as f:
+        text += f.read()
+    print("Additional dataset: ulsf_subset00_1.txt loaded successfully. ")
 
 tokens = re.findall(r"\w+|\W+", text)
 # here are all the unique words that occur in this text
@@ -41,17 +49,20 @@ encode = lambda s: stoi[s] # encoder: take a string, output an integer
 decode = lambda l: itos[l] # decoder: take an integer, output a string
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
-if not os.path.exists("word_level_transformer/model.pth"):
+
+model_path = "word_level_transformer/model.pth"
+if not os.path.exists(model_path):
     exit()
 else:
-    model.load_state_dict(torch.load('word_level_transformer/model.pth'))
+    model.load_state_dict(torch.load(model_path))
     print("model.pth loaded successfully. ")
 
-if not os.path.exists("word_level_transformer/hyperparameters.txt"):
+parameters_path = "word_level_transformer/hyperparameters.txt"
+if not os.path.exists(parameters_path):
     print("hyperparameters.txt not found. ")
     exit()
 else:
-    with open("word_level_transformer/hyperparameters.txt", "r") as f:
+    with open(parameters_path, "r") as f:
         lines = f.readlines()
         n_embd = int(lines[0])
         n_head = int(lines[1])
