@@ -38,13 +38,13 @@ if os.path.exists(ulsf_001_path):
         text += f.read()
     print("Additional dataset: ulsf_subset00_1.txt loaded successfully. ")
 
-tokens = re.findall(r"\w+|\W+", text)
+# tokens = re.findall(r"\w+|\W+", text)
 # here are all the unique words that occur in this text
-words = sorted(list(set(tokens)))
-vocab_size = len(words)
+# words = sorted(list(set(tokens)))
+# vocab_size = len(words)
 # create a mapping from words to integers
-stoi = { w:i for i,w in enumerate(words) }
-itos = { i:w for i,w in enumerate(words) }
+# stoi = { w:i for i,w in enumerate(words) }
+# itos = { i:w for i,w in enumerate(words) }
 encode = lambda s: stoi[s] # encoder: take a string, output an integer
 decode = lambda l: itos[l] # decoder: take an integer, output a string
 

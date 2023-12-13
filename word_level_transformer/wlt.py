@@ -129,6 +129,11 @@ class GPTLanguageModel(nn.Module):
         # (batch_size, block_size)
         B, T = idx.shape
         # (batch_size, block_size, n_embd)
+        try:
+            x = self.embd_table(idx) + self.posit_table(torch.arange(T, device=self.device))
+        except:
+            print(f"Token {idx}")
+            exit()
         x = self.embd_table(idx) + self.posit_table(torch.arange(T, device=self.device))
         # (batch_size, block_size, n_embd)
         x = self.blocks(x)

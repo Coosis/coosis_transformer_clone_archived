@@ -1,5 +1,7 @@
 import os.path
-import re
+import re # regular expressions
+
+import tiktoken
 
 from wlt import GPTLanguageModel as gpt
 from wlt import estimate_loss, get_batch
@@ -22,19 +24,20 @@ eval_iters = 200
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-woo_path = "word_level_transformer/woo.txt"
-if os.path.exists(woo_path):
-    with open(woo_path, 'r', encoding='utf-8') as f:
-        text = f.read()
-else:
-    print("File not found. ")
-    exit()
+def read_all(path):
+    text = ""
+    txt_files = [f for f in os.listdir(path) if f.endswith('.txt')]
+    for file in txt_files:
+        with open(path + file, 'r', encoding='utf-8') as f:
+            text += f.read()
+    return text
 
-ulsf_001_path = "word_level_transformer/ulsf_subset00_1.txt"
-if os.path.exists(ulsf_001_path):
-    with open(ulsf_001_path, 'r', encoding='utf-8') as f:
-        text += f.read()
-    print("Additional dataset: ulsf_subset00_1.txt loaded successfully. ")
+data_path = "word_level_transformer/dataset/"
+text = read_all(data_path)
+
+if text == "":
+    print("No dataset found. ")
+    exit()
 
 parameters_path = "word_level_transformer/hyperparameters.txt"
 if not os.path.exists(parameters_path):
@@ -69,18 +72,25 @@ else:
         eval_iters = int(lines[10])
     print("hyperparameters.txt loaded successfully. ")
 
-tokens = re.findall(r"\w+|\W+", text)
+# tokens = re.findall(r"\w+|\W+", text)
 # here are all the unique words that occur in this text
-words = sorted(list(set(tokens)))
-vocab_size = len(words)
+# words = sorted(list(set(tokens)))
+
 # create a mapping from words to integers
-stoi = { w:i for i,w in enumerate(words) }
-itos = { i:w for i,w in enumerate(words) }
-encode = lambda s: stoi[s] # encoder: take a string, output an integer
-decode = lambda l: itos[l] # decoder: take an integer, output a string
+# stoi = { w:i for i,w in enumerate(words) }
+# itos = { i:w for i,w in enumerate(words) }
+# encode = lambda s: stoi[s] # encoder: take a string, output an integer
+# decode = lambda l: itos[l] # decoder: take an integer, output a string
+
+enc = tiktoken.get_encoding("cl100k_base")
+encode = enc.encode
+decode = enc.decode
 
 # Train and test splits
-encoded_data = [encode(word) for word in tokens]
+# encoded_data = [encode(word) for word in tokens]
+encoded_data = encode(text)
+vocab_size = max(set(encoded_data))
+print(f"Vocab size: {vocab_size}")
 data = torch.tensor(encoded_data, dtype=torch.long)
 n = int(0.9*len(data)) # first 90% will be train, rest val
 train_data = data[:n]
