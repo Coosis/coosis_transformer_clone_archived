@@ -26,14 +26,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def read_all(path):
     text = ""
+    data_length = []
     txt_files = [f for f in os.listdir(path) if f.endswith('.txt')]
     for file in txt_files:
+        prev_len = len(text)
         with open(path + file, 'r', encoding='utf-8') as f:
             text += f.read()
-    return text
+        data_length.append(len(text) - prev_len)
+    return text, data_length
 
 data_path = "word_level_transformer/dataset/"
-text = read_all(data_path)
+text, data_length = read_all(data_path)
 
 if text == "":
     print("No dataset found. ")
@@ -95,6 +98,7 @@ data = torch.tensor(encoded_data, dtype=torch.long)
 n = int(0.9*len(data)) # first 90% will be train, rest val
 train_data = data[:n]
 val_data = data[n:]
+for l in leng
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
 model_path = "word_level_transformer/model.pth"
