@@ -69,8 +69,15 @@ else:
 m = model.to(device)
 
 query = input("Enter the query: ")
+tokens = re.findall(r"\w+|\W+", query)
 
-encoded_data = [encode(word) for word in query.split()]
+encoded_data = []
+for word in tokens:
+    if word not in words:
+        print(f"Word {word} not found. ")
+        exit()
+    else:
+        encoded_data.append(encode(word))
 
 context = torch.tensor(encoded_data, dtype=torch.long, device=device)
 context = context.unsqueeze(0)  # Add batch dimension
