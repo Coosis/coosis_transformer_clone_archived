@@ -1,6 +1,8 @@
 import os
 import re
 
+import tiktoken
+
 from wlt import GPTLanguageModel as gpt
 import torch
 import torch.nn as nn
@@ -23,30 +25,34 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 max_lenth = 100
 
-woo_path = "word_level_transformer/woo.txt"
+def read_all(path):
+    text = ""
+    data_length = []
+    txt_files = [f for f in os.listdir(path) if f.endswith('.txt')]
+    for file in txt_files:
+        prev_len = len(text)
+        with open(path + file, 'r', encoding='utf-8') as f:
+            text += f.read()
+        data_length.append(len(text) - prev_len)
+    return text, data_length
 
-if os.path.exists(woo_path):
-    with open(woo_path, 'r', encoding='utf-8') as f:
-        text = f.read()
-else:
-    print("woo.txt not found. ")
+data_path = "word_level_transformer/dataset/"
+text, data_length = read_all(data_path)
+
+if text == "":
+    print("No dataset found. ")
     exit()
 
-ulsf_001_path = "word_level_transformer/ulsf_subset00_1.txt"
-if os.path.exists(ulsf_001_path):
-    with open(ulsf_001_path, 'r', encoding='utf-8') as f:
-        text += f.read()
-    print("Additional dataset: ulsf_subset00_1.txt loaded successfully. ")
+enc = tiktoken.get_encoding("cl100k_base")
+encoded_data = enc.encode(text)
+tokens = sorted(list(set(encoded_data)))
+ttoi = { t:i for i,t in enumerate(tokens) }
+itot = { i:t for i,t in enumerate(tokens) }
+encode = lambda s: [ttoi[t] for t in enc.encode(s)]
+decode = lambda l: enc.decode([itot[i] for i in l])
 
-# tokens = re.findall(r"\w+|\W+", text)
-# here are all the unique words that occur in this text
-# words = sorted(list(set(tokens)))
-# vocab_size = len(words)
-# create a mapping from words to integers
-# stoi = { w:i for i,w in enumerate(words) }
-# itos = { i:w for i,w in enumerate(words) }
-encode = lambda s: stoi[s] # encoder: take a string, output an integer
-decode = lambda l: itos[l] # decoder: take an integer, output a string
+vocab_size = len(tokens)
+print(f"Vocab size: {vocab_size}")
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
 
@@ -80,20 +86,11 @@ else:
 m = model.to(device)
 
 query = input("Enter the query: ")
-tokens = re.findall(r"\w+|\W+", query)
 
-encoded_data = []
-for word in tokens:
-    if word not in words:
-        print(f"Word {word} not found. ")
-        exit()
-    else:
-        encoded_data.append(encode(word))
+encoded_data = encode(query)
 
 context = torch.tensor(encoded_data, dtype=torch.long, device=device)
 context = context.unsqueeze(0)  # Add batch dimension
 output = model.generate(context, max_lenth, block_size)[0]
-decoded_output = ""
-for i in output.tolist():
-    decoded_output += decode(i)
+decoded_output = decode(output.tolist())
 print(decoded_output)
