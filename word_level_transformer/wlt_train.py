@@ -86,19 +86,22 @@ else:
 # decode = lambda l: itos[l] # decoder: take an integer, output a string
 
 enc = tiktoken.get_encoding("cl100k_base")
-encode = enc.encode
-decode = enc.decode
 
 # Train and test splits
 # encoded_data = [encode(word) for word in tokens]
-encoded_data = encode(text)
-vocab_size = max(set(encoded_data))
+encoded_data = enc.encode(text)
+tokens = sorted(list(set(encoded_data)))
+ttoi = { t:i for i,t in enumerate(tokens) }
+itot = { i:t for i,t in enumerate(tokens) }
+encode = lambda s: [ttoi[t] for t in enc.encode(s)]
+decode = lambda l: enc.decode([itot[i] for i in l])
+
+vocab_size = len(tokens) + 1
 print(f"Vocab size: {vocab_size}")
 data = torch.tensor(encoded_data, dtype=torch.long)
 n = int(0.9*len(data)) # first 90% will be train, rest val
 train_data = data[:n]
 val_data = data[n:]
-for l in leng
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
 model_path = "word_level_transformer/model.pth"
