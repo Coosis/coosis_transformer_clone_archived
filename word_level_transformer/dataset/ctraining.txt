@@ -1,0 +1,513 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    char text[100];
+    printf("Enter text: ");
+    fgets(text,sizeof(text),stdin);
+
+    int n = strlen(text);
+    int i;
+
+    printf("%c", metin[0]);
+
+    for (i = 0; i < n; i++)
+    {
+        if (text[i] == ' ')
+        {
+            printf("%c", text[i+1]);
+        }
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    int k1, k2, hypo;
+
+    printf("Enter two perpendicular sides: ");
+    scanf("%d %d", &k1 &k2);
+
+    hypo = sqrt(k1*k1 + k2*k2);
+
+    printf("Hypotenus: %.2f", hypo);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    int array[] = {3, 8, 15, 29, 36, 2, 7, 88, 657, 349};
+
+    int max = array[0];
+    int min = array[0];
+
+    int i, j;
+
+    for (i = 1; i < 10; i++)
+    {
+        if (max < array[i])
+        {
+            max = array[i];
+        }
+        
+        if (min > array[i])
+        {
+            min = array[i];
+        }
+    }
+
+    printf("Maximum number: %d\n", max);
+    printf("Minimum number: %d", min);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+    int n1, n2, n3;
+    int min, max;
+
+    printf("Enter 3 numbers: ");
+    scanf("%d %d %d", &n1, &n2, &n3);
+
+
+    max = (n1 > n2 && n1 > n3) ? n1: (n2 > n1 && n2 > n3) ? n2: n3;
+    min = (n1 < n2 && n1 < n3) ? n1: (n2 < n1 && n2 < n3) ? n2: n3;
+
+    printf("Maximum number: %d\n", max);
+    printf("Minimum number: %d", min);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    int number;
+    printf("Enter number: ");
+    scanf("%d", &number);
+    int temp = number;
+
+    int reverse = 0;
+
+    while (temp != 0)
+    {
+        reverse = reverse*10;
+        reverse += temp%10;
+        temp = temp/10;
+    }
+
+    if (number == reverse)
+    {
+        printf("%d is a palindromic number.", number);
+    }
+    else
+    {
+        printf("%d is not a palindromic number.", number);
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    char text [100];
+    int number;
+    printf("Enter text: ");
+    gets(text);
+
+    int i;
+    for (i = 0; text[i] != '\0'; i++)
+    {
+        number++;
+    }
+
+    int length = strlen(text);
+
+    printf("Length of text with for loop: %d\n", number);
+    printf("Length of text with strlen: %d", length);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(){
+
+    int n1, n2;
+    char select;
+
+    printf("First number: ");
+    scanf("%d", &n1);
+
+    printf("Enter character[+, -, *, /]: ");
+    scanf("%c", &select);
+
+    printf("Second number: ");
+    scanf("%d", &n2);
+
+    switch (select)
+    {
+        case '+': printf("Addition result: %d", (n1+n2));
+        break;
+        case '-': printf("Substraction result: %d", (n1-n2));
+        break;
+        case '*': printf("Multiplication result: %d", (n1*n2));
+        break;
+        case '/': printf("Division result: %d", (n1/n2));
+        break;
+
+        default: printf("Error!");
+        break;
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <math.h>
+#include <time.h>
+
+int main(int argc, char *argv[]){
+
+    int n1, n2;
+    
+    printf("Enter the starting number: ");
+    scanf("%d", %n1);
+
+    printf("Enter the ending number: ");
+    scanf("%d", %n2);
+
+    int i, j;
+    for (i = n1; i < n2; i++)
+    {
+        int status = 1;
+        for (j = 2; j < i; j++)
+        {
+            if (i%j == 0)
+            {
+                break;
+            }
+        }
+
+        if(status = 1)
+        printf("%d", i);
+        
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    char text[100];
+
+    printf("Enter text: ");
+    gets(text);
+
+    int i;
+    int n = strlen(text);
+
+    for (i = 0; i < n; i++)
+    {
+        printf("%c", text[n-i-1]);
+        
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+
+    int array[] = {3, 8, 45, 75, 2, 9, 6, 12, 36, 27};
+
+    int i, j;
+
+    for (i = 0; i < 10; i++)
+    {
+        for (j = 0; j < i; j++)
+        {
+            if (array[i] < array[j])
+            {
+                int temporary = array[i];
+                array[i] = array[j];
+                array[j] = array[i];
+            } 
+        }
+    }
+
+    for (i = 0; i < 10; i++)
+    {
+        printf("%d", array[i]);
+    }
+
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]){
+    int n;
+    int sum_odd = 0, sum_even = 0;
+
+    printf("Enter n value: ");
+    scanf("%d", n);
+
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        int number;
+        printf("Number: ");
+        scanf("%d", &number);
+
+        if (number%2 == 0)
+        {
+            sum_even += number;
+        }
+        else
+        {
+            sum_odd += number;
+        }
+    }
+
+    printf("Sum of the even numbers: %d", sum_even);
+    printf("Sum of the odd numbers: %d", sum_odd);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char *argv[]){
+    int sum = 0;
+    int i;
+
+    for(i = 0; i <= 100; i++){
+        sum += i;
+        printf("Result: %d", sum);
+    }
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int main(int argc, char *argv[]){
+
+    int n1, n2, result;
+
+    printf("Enter number: ");
+    scanf("%d", &n1);
+
+    printf("Enter number: ");
+    scanf("%d", &n2);
+
+    p1 = &n1;
+    p2 = &n2;
+
+    result = *p1 + *p2;
+
+    printf("Sum = %d", result);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+float celsius(float f);
+float fahrenheit(float c);
+
+int main()
+{
+    float secim;
+    char deger;
+
+    printf("Celsius => Fahrenheit : c\n");
+    printf("Fahrenheit => Celsius : f\n");
+    printf("Bir secim girin : ");
+    scanf(" %c", &deger);
+
+    if (deger == 'c')
+    {
+        scanf("%f", &secim);
+        printf("%.1f celsius => %.2f fahrenheit", secim, fahrenheit(secim));
+    }
+    else if (deger == 'f')
+    {
+        scanf("%f", &secim);
+        printf("%.1f fahrenheit => %.2f celsius\n", secim, celsius(secim));
+    }
+
+    return 0;
+}
+
+float celsius(float f)
+{
+    return (f - 32) * 5 / 9;
+}
+
+float fahrenheit(float c)
+{
+    return (c * 9 / 5) + 32;
+} 
+
+#include <stdio.h>	//	Include Standard C header file
+#include <stdlib.h>	//	Include Stanard Libary file for some extra functions
+
+int main()
+{
+    int i,j,k,n,a[100],b[100],c[100];	// Create some arrays for later use
+    scanf("%d",&n);
+	
+    for(i=0;i<n;i++){
+	printf("[i] Please Enter A Number :");	// Ask for a number
+	scanf("%d",&a[i]);			// Add current number to the array
+    }
+	
+    int min=a[0];
+    for(i=0;i<n;i++){
+        if(min>a[i])
+            min=a[i];
+    }
+	
+    for(i=0;i<n;i++)
+        a[i]=a[i]-min+1;
+
+    int max=a[0];
+    for(i=0;i<n;i++){
+        if(max<a[i])
+            max=a[i];
+    }
+    int m=max;
+    for(i=0;i<=m;i++)
+        c[i]=0;
+    for(i=0;i<n;i++){
+    c[a[i]]=c[a[i]]+1;
+    }
+    for(i=1;i<=m;i++){
+        c[i]=c[i-1]+c[i];
+    }
+    for(i=0;i<n;i++){
+        b[c[a[i]]]=a[i];
+        c[a[i]]--;
+    }
+
+    printf ("Sorted Array is: \n");
+
+		for (int i=1; i<=n; i++)	
+		{
+		    b[i] = b[i]+min-1;		//	Sort the array in order
+			printf ("%d ", b[i]);	//	print in order
+		}
+	
+	return 0; // Exit with no error code - exit with code zero
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int a,i,j=1,s=0,x,y,q=0,w=0;
+    printf("Enter The Number...:");
+    scanf("%d",&a);
+    for(i=1;i<=a;i++)
+    {
+        if(a%i==0)
+            s++;
+        }
+      if(s==2)
+            printf("Closest prime to %d is %d",a,a);
+      else
+      {
+      while(w<2&&q<2)
+      {
+        w=0;
+      q=0;
+          x=a+j;
+      y=a-j;
+      j++;
+         for(i=1;i<=x;i++)
+          {
+          if(x%i==0)
+            q++;
+          }
+          for(i=1;i<=y;i++)
+          {
+          if(y%i==0)
+            w++;
+          }
+      }
+          if(w==2&&q==2)
+            printf("%d and %d is closest prime to %d",y,x,a);
+          else if(q==2)
+            printf("%d is the closest prime to %d",x,a);
+          else if(w==2)
+            printf("%d is the closest prime to %d",y,a);
+
+      }
+    return 0;
+}
+
+#include <stdio.h>
+
+int fib(int n)
+{
+    if (n <= 1)
+        return n;
+    return fib(n-1) + fib(n-2);
+}
+
+int main()
+{
+        for(int i = 0; i<= 25;i++)
+                printf("%d\n", fib(i));
+}
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+        char str[] = "abcdefg";
+
+        int i = 0;
+        while(str[i])
+        {
+        putchar (toupper(str[i]));
+        i++;
+        }
+        printf("\n");
+        return 0;
+}

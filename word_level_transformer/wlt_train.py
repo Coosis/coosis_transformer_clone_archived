@@ -1,8 +1,6 @@
 import os.path
 import re # regular expressions
 
-import tiktoken
-
 from wlt import GPTLanguageModel as gpt
 from wlt import estimate_loss, get_batch
 import torch
@@ -81,19 +79,43 @@ else:
         eval_iters = int(lines[10])
     print("hyperparameters.txt loaded successfully. ")
     
-enc = tiktoken.get_encoding("cl100k_base")
-encoded_data = enc.encode(text)
-print(detokenize(encoded_data))
-tokens = sorted(list(set(encoded_data)))
-ttoi = { t:i for i,t in enumerate(tokens) }
-itot = { i:t for i,t in enumerate(tokens) }
-encode = lambda s: [ttoi[t] for t in enc.encode(s)]
-decode = lambda l: enc.decode([itot[i] for i in l])
+def load_vocab(path):
+    path = f'{root_path}/{path}'
+    vocab = []
+    with open(path, 'r', encoding='utf-8') as f:
+        for line in f:
+            # print(f'here{line}!')
+            if line[-1] == '\n' and len(line) > 1:
+                vocab.append(line[:-1])
+            else:
+                vocab.append(line)
+    return vocab
+
+if(os.path.exists(f'{root_path}/vocab.txt')):
+    vocab = load_vocab('vocab.txt')
+    vocab_size = len(vocab)
+    print(f"Vocab size: {vocab_size}")
+else:
+    print("vocab.txt not found. Run build_vocab.py first. ")
+    exit()
+
+vtoi = { v:i for i,v in enumerate(vocab) }
+itov = { i:t for i,t in enumerate(vocab) }
+def encode(s): 
+    encoded = []
+    while len(s) > 0:
+        for v in reversed(vocab):
+            if s.startswith(v):
+                encoded.append(vtoi[v])
+                s = s[len(v):]
+                break
+    return encoded
+
+def decode(l):
+    return ''.join([itov[i] for i in l])
 
 # Train and test splits
-encoded_data = encode(text)
-vocab_size = len(tokens)
-print(f"Vocab size: {vocab_size}")
+# encoded_data = encode(text)
 # data = torch.tensor(encoded_data, dtype=torch.long)
 
 train_data = torch.tensor(encode(training_text), dtype=torch.long)
@@ -103,7 +125,7 @@ val_data = torch.tensor(encode(validation_text), dtype=torch.long)
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
 model_path = f"{root_path}/model.pth"
 if not os.path.exists(model_path):
-    print("model.pth not found. Using default parameters. ")
+    print("model.pth not found. Creating a new one. ")
 else:
     model.load_state_dict(torch.load(model_path))
     print("model.pth loaded successfully. ")

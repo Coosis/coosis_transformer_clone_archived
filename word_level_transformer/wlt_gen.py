@@ -1,8 +1,6 @@
 import os
 import re
 
-import tiktoken
-
 from wlt import GPTLanguageModel as gpt
 import torch
 import torch.nn as nn
@@ -25,45 +23,41 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 max_lenth = 100
 
-def read_all(path):
-    text = ""
-    data_length = []
-    txt_files = [f for f in os.listdir(path) if f.endswith('.txt')]
-    for file in txt_files:
-        prev_len = len(text)
-        with open(path + file, 'r', encoding='utf-8') as f:
-            text += f.read()
-        data_length.append(len(text) - prev_len)
-    return text, data_length
+root_path = os.path.dirname(__file__)  # Get the directory of the current file
+def load_vocab(path):
+    path = f'{root_path}/{path}'
+    vocab = []
+    with open(path, 'r', encoding='utf-8') as f:
+        for line in f:
+            # print(f'here{line}!')
+            if line[-1] == '\n' and len(line) > 1:
+                vocab.append(line[:-1])
+            else:
+                vocab.append(line)
+    return vocab
 
-data_path = "word_level_transformer/dataset/"
-text, data_length = read_all(data_path)
-
-if text == "":
-    print("No dataset found. ")
-    exit()
-
-enc = tiktoken.get_encoding("cl100k_base")
-encoded_data = enc.encode(text)
-tokens = sorted(list(set(encoded_data)))
-ttoi = { t:i for i,t in enumerate(tokens) }
-itot = { i:t for i,t in enumerate(tokens) }
-encode = lambda s: [ttoi[t] for t in enc.encode(s)]
-decode = lambda l: enc.decode([itot[i] for i in l])
-
-vocab_size = len(tokens)
-print(f"Vocab size: {vocab_size}")
-
-model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
-
-model_path = "word_level_transformer/model.pth"
-if not os.path.exists(model_path):
-    exit()
+if(os.path.exists(f'{root_path}/vocab.txt')):
+    vocab = load_vocab('vocab.txt')
+    vocab_size = len(vocab)
+    print(f"Vocab size: {vocab_size}")
 else:
-    model.load_state_dict(torch.load(model_path))
-    print("model.pth loaded successfully. ")
+    print("vocab.txt not found. Run build_vocab.py first. ")
+    exit()
 
-parameters_path = "word_level_transformer/hyperparameters.txt"
+vtoi = { v:i for i,v in enumerate(vocab) }
+itov = { i:t for i,t in enumerate(vocab) }
+def encode(s): 
+    encoded = []
+    while len(s) > 0:
+        for v in reversed(vocab):
+            if s.startswith(v):
+                encoded.append(vtoi[v])
+                s = s[len(v):]
+    return encoded
+def decode(l):
+    return ''.join([itov[i] for i in l])
+
+parameters_path = f"{root_path}/hyperparameters.txt"
 if not os.path.exists(parameters_path):
     print("hyperparameters.txt not found. ")
     exit()
@@ -83,12 +77,21 @@ else:
         eval_iters = int(lines[10])
     print("hyperparameters.txt loaded successfully. ")
 
+model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
+
+model_path = f'{root_path}/model.pth'
+if not os.path.exists(model_path):
+    print("model.pth not found. ")
+    exit()
+else:
+    model.load_state_dict(torch.load(model_path))
+    print("model.pth loaded successfully. ")
+
 m = model.to(device)
 
 query = input("Enter the query: ")
 
 encoded_data = encode(query)
-
 context = torch.tensor(encoded_data, dtype=torch.long, device=device)
 context = context.unsqueeze(0)  # Add batch dimension
 output = model.generate(context, max_lenth, block_size)[0]

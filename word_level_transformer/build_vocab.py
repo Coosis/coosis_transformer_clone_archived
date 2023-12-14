@@ -1,6 +1,6 @@
 import os
 
-new_token = 10
+new_token = 230
 
 root_path = os.path.dirname(__file__)
 
@@ -40,31 +40,34 @@ print("Original vocab size: ", len(vocab))
 print(f"First 10 words: {vocab[:10]}")
 
 occurrences = []
-pairs = []
-for word in vocab:
-    occurrences.append(text.count(word))
 
 for fir in vocab:
     for sec in vocab:
         if fir == sec:
             continue
 
+        if fir + sec in vocab or sec + fir in vocab:
+            continue
+
         pair = fir + sec
+        if pair.count('\n') > 0:
+            continue
         # print(pair)
-        pairs.append(pair)
-        occurrences.append(text.count(pair))
+        occurrences.append((pair, text.count(pair)))
 
 print(occurrences)
-print(pairs)
 
-for i in range(new_token):
-    max_occ = max(occurrences)
-    max_occ_index = occurrences.index(max_occ)
-    print(f'Max occ: {max_occ}, index: {max_occ_index}')
-    vocab.append(pairs[max_occ_index])
-    print(f'New token: {pairs[max_occ_index]}')
+sorted_occ = sorted(occurrences, key=lambda x: x[1], reverse=True)
 
-vocab = sorted(vocab)
+for p, c in sorted_occ:
+    if p in vocab:
+        continue
+    vocab.append(p)
+    new_token -= 1
+    if new_token == 0:
+        break
+
+vocab = sorted(vocab, key=lambda x: len(x))
 with open(f'{root_path}/vocab.txt', "w", encoding='utf-8') as f:
     for word in vocab:
         f.write(word + '\n')
