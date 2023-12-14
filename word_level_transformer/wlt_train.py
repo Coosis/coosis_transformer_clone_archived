@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+root_path = os.path.dirname(__file__)  # Get the directory of the current file
+
 # hyperparameters
 n_embd = 256
 n_head = 16
@@ -39,14 +41,14 @@ def read_all(path):
 
     return full_text, training_text, validation_text
 
-data_path = "word_level_transformer/dataset/"
+data_path = f'{root_path}/dataset/'
 text, training_text, validation_text = read_all(data_path)
 
 if text == "":
     print("No dataset found. ")
     exit()
 
-parameters_path = "word_level_transformer/hyperparameters.txt"
+parameters_path = f"{root_path}/hyperparameters.txt"
 if not os.path.exists(parameters_path):
     print("hyperparameters.txt not found. Using Default parameters.")
     with open(parameters_path, "w") as f:
@@ -81,6 +83,7 @@ else:
     
 enc = tiktoken.get_encoding("cl100k_base")
 encoded_data = enc.encode(text)
+print(detokenize(encoded_data))
 tokens = sorted(list(set(encoded_data)))
 ttoi = { t:i for i,t in enumerate(tokens) }
 itot = { i:t for i,t in enumerate(tokens) }
@@ -98,7 +101,7 @@ train_data = torch.tensor(encode(training_text), dtype=torch.long)
 val_data = torch.tensor(encode(validation_text), dtype=torch.long)
 
 model = gpt(vocab_size, block_size, n_blocks, n_embd, n_head, head_size, dropout, device)
-model_path = "word_level_transformer/model.pth"
+model_path = f"{root_path}/model.pth"
 if not os.path.exists(model_path):
     print("model.pth not found. Using default parameters. ")
 else:
